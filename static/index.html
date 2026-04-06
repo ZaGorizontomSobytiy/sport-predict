@@ -5,152 +5,152 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>SportPredict — угадай момент</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap');
+    body { font-family: 'Inter', sans-serif; }
+    .glow-green { box-shadow: 0 0 24px rgba(74,222,128,0.25); }
+    .glow-purple { box-shadow: 0 0 24px rgba(168,85,247,0.25); }
+    .card { background: linear-gradient(135deg, #1a1f2e 0%, #161b27 100%); }
+  </style>
 </head>
 <body class="bg-gray-950 text-white min-h-screen">
 
   <!-- Шапка -->
-  <header class="bg-gray-900 border-b border-gray-800 px-6 py-4 flex items-center gap-3">
-    <span class="text-2xl">⚡</span>
-    <div>
-      <h1 class="text-xl font-bold text-green-400 leading-none">SportPredict</h1>
-      <p class="text-gray-500 text-xs mt-0.5">Угадай момент события точнее всех</p>
+  <header class="border-b border-gray-800/60 px-6 py-4"
+          style="background: linear-gradient(135deg, #0f1623 0%, #1a2035 100%)">
+    <div class="max-w-3xl mx-auto flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-9 h-9 rounded-xl bg-green-500/20 flex items-center justify-center text-lg">⚡</div>
+        <div>
+          <h1 class="text-lg font-bold text-white leading-none">SportPredict</h1>
+          <p class="text-gray-500 text-xs mt-0.5">Угадай момент события точнее всех</p>
+        </div>
+      </div>
+      <div class="text-xs text-gray-600 hidden sm:block">
+        Спорт · Киберспорт · AI
+      </div>
     </div>
   </header>
 
-  <main class="max-w-3xl mx-auto px-4 py-6 space-y-5">
+  <main class="max-w-3xl mx-auto px-4 py-6 space-y-4">
 
-    <!-- Вкладки категорий -->
-    <div class="flex gap-2 bg-gray-900 rounded-xl p-1 border border-gray-800">
-      <button
-        id="tab-sport"
-        onclick="switchCategory('sport')"
-        class="flex-1 py-2 rounded-lg text-sm font-semibold transition-all bg-green-600 text-white"
-      >
+    <!-- Вкладки -->
+    <div class="flex gap-2 p-1 rounded-xl border border-gray-800/60"
+         style="background: #0f1623">
+      <button id="tab-sport" onclick="switchCategory('sport')"
+        class="flex-1 py-2.5 rounded-lg text-sm font-semibold transition-all bg-green-600 text-white glow-green">
         ⚽ Спорт
       </button>
-      <button
-        id="tab-esport"
-        onclick="switchCategory('esport')"
-        class="flex-1 py-2 rounded-lg text-sm font-semibold transition-all text-gray-400 hover:text-white"
-      >
+      <button id="tab-esport" onclick="switchCategory('esport')"
+        class="flex-1 py-2.5 rounded-lg text-sm font-semibold transition-all text-gray-400 hover:text-white hover:bg-gray-800">
         🎮 Киберспорт
       </button>
     </div>
 
     <!-- Название события -->
-    <div class="bg-gray-900 rounded-xl px-5 py-4 border border-gray-800">
-      <p class="text-xs text-gray-500 uppercase tracking-widest mb-1">Текущее событие</p>
-      <h2 id="event-name" class="text-lg font-semibold">Загрузка...</h2>
-      <p class="text-gray-400 text-sm mt-1">
-        Введите никнейм, нажмите <span class="text-green-400 font-bold">«Начать просмотр»</span>,
-        затем кликните <span class="text-green-400 font-bold">СЕЙЧАС!</span> или крикните в микрофон.
+    <div class="card rounded-2xl px-5 py-4 border border-gray-800/60">
+      <p class="text-xs text-gray-500 uppercase tracking-widest mb-1">Событие</p>
+      <h2 id="event-name" class="text-base font-semibold text-white">Загрузка...</h2>
+      <p class="text-gray-500 text-xs mt-2 leading-relaxed">
+        Введите никнейм → запустите видео → нажмите
+        <span class="text-green-400 font-semibold">СЕЙЧАС!</span>
+        или крикните в микрофон в нужный момент.
       </p>
     </div>
 
     <!-- Шаг 1: никнейм -->
-    <div id="step-nickname" class="bg-gray-900 rounded-xl px-5 py-5 border border-gray-800">
-      <label class="block text-sm text-gray-400 mb-2">Ваш никнейм</label>
+    <div id="step-nickname" class="card rounded-2xl px-5 py-5 border border-gray-800/60">
+      <label class="block text-xs text-gray-500 uppercase tracking-widest mb-3">Ваш никнейм</label>
       <div class="flex gap-3">
-        <input
-          id="nickname"
-          type="text"
-          placeholder="Введите никнейм"
-          maxlength="30"
-          class="flex-1 bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-white
-                 placeholder-gray-600 focus:outline-none focus:border-green-500 transition-colors"
-        />
-        <button
-          onclick="startSession()"
-          class="bg-green-600 hover:bg-green-500 active:scale-95 text-white font-semibold
-                 px-5 py-2 rounded-lg transition-all whitespace-nowrap"
-        >
+        <input id="nickname" type="text" placeholder="Введите никнейм" maxlength="30"
+          class="flex-1 bg-gray-900 border border-gray-700 rounded-xl px-4 py-2.5 text-white text-sm
+                 placeholder-gray-600 focus:outline-none focus:border-green-500 transition-colors" />
+        <button onclick="startSession()"
+          class="bg-green-600 hover:bg-green-500 active:scale-95 text-white font-semibold text-sm
+                 px-5 py-2.5 rounded-xl transition-all whitespace-nowrap">
           Начать просмотр
         </button>
       </div>
     </div>
 
-    <!-- Шаг 2: видео + ставка -->
-    <div id="step-watch" class="hidden space-y-5">
+    <!-- Шаг 2: видео + кнопки -->
+    <div id="step-watch" class="hidden space-y-4">
 
-      <div class="bg-gray-900 rounded-xl overflow-hidden border border-gray-800">
+      <!-- Видео -->
+      <div class="rounded-2xl overflow-hidden border border-gray-800/60" style="background:#000">
         <div class="relative" style="padding-top: 56.25%">
-          <iframe
-            id="video-frame"
-            src=""
-            class="absolute inset-0 w-full h-full"
-            allowfullscreen
-            allow="autoplay"
-          ></iframe>
+          <iframe id="video-frame" src="" class="absolute inset-0 w-full h-full"
+                  allowfullscreen allow="autoplay"></iframe>
         </div>
       </div>
 
-      <!-- Шаг 2а: ожидание старта таймера -->
-      <div id="step-start-timer" class="bg-gray-900 rounded-xl px-5 py-5 border border-gray-800 text-center space-y-3">
-        <p class="text-gray-400 text-sm">Запустите видео, затем нажмите кнопку</p>
-        <button
-          onclick="startTimer()"
+      <!-- Старт таймера -->
+      <div id="step-start-timer" class="card rounded-2xl px-5 py-5 border border-gray-800/60 text-center space-y-3">
+        <p class="text-gray-400 text-sm">Запустите видео выше, затем нажмите кнопку</p>
+        <button onclick="startTimer()"
           class="bg-green-600 hover:bg-green-500 active:scale-95 text-white font-bold
-                 px-8 py-3 rounded-xl transition-all text-base"
-        >
+                 px-8 py-3 rounded-xl transition-all text-sm glow-green">
           ▶ Старт таймера
         </button>
       </div>
 
-      <!-- Шаг 2б: таймер и ставка -->
-      <div id="step-betting" class="hidden bg-gray-900 rounded-xl px-5 py-5 border border-gray-800 text-center space-y-4">
+      <!-- Таймер + ставка -->
+      <div id="step-betting" class="hidden card rounded-2xl px-5 py-6 border border-gray-800/60 text-center space-y-5">
+
         <div>
-          <p class="text-gray-500 text-xs uppercase tracking-widest mb-1">Прошло времени</p>
-          <div id="timer" class="text-4xl font-mono font-bold text-white">0.0 с</div>
+          <p class="text-xs text-gray-500 uppercase tracking-widest mb-1">Прошло времени</p>
+          <div id="timer" class="text-5xl font-black font-mono text-white tracking-tight">0.0 с</div>
         </div>
 
         <div class="flex gap-3 justify-center">
-          <button
-            id="predict-btn"
-            onclick="makePrediction()"
+          <button id="predict-btn" onclick="makePrediction()"
             class="bg-green-500 hover:bg-green-400 active:scale-95 text-white font-black
-                   text-xl px-10 py-4 rounded-xl transition-all shadow-lg shadow-green-900/40
-                   disabled:bg-gray-700 disabled:cursor-not-allowed"
-          >
+                   text-xl px-10 py-4 rounded-2xl transition-all glow-green
+                   disabled:bg-gray-700 disabled:cursor-not-allowed disabled:shadow-none">
             СЕЙЧАС!
           </button>
-          <button
-            id="voice-btn"
-            onclick="startVoice()"
-            class="bg-purple-600 hover:bg-purple-500 active:scale-95 text-white font-bold
-                   text-sm px-5 py-4 rounded-xl transition-all
-                   disabled:bg-gray-700 disabled:cursor-not-allowed"
-          >
-            🎙 Крикни!
-          </button>
+          <div class="flex flex-col items-center gap-1">
+            <button id="voice-btn" onclick="startVoice()"
+              class="bg-purple-600 hover:bg-purple-500 active:scale-95 text-white font-bold
+                     text-sm px-5 py-4 rounded-2xl transition-all glow-purple
+                     disabled:bg-gray-700 disabled:cursor-not-allowed disabled:shadow-none">
+              🎙 Крикни!
+            </button>
+          </div>
         </div>
 
-        <p id="voice-status" class="text-gray-600 text-xs hidden"></p>
-        <p class="text-gray-600 text-xs">Нажмите кнопку или крикните в микрофон</p>
+        <!-- Подсказка по словам -->
+        <div class="bg-gray-900/60 rounded-xl px-4 py-3 text-left space-y-1">
+          <p class="text-xs text-gray-500 uppercase tracking-widest mb-2">Слова для голосового ввода</p>
+          <div class="flex flex-wrap gap-2" id="trigger-hints"></div>
+        </div>
+
+        <p id="voice-status" class="text-purple-400 text-xs hidden"></p>
       </div>
 
     </div>
 
     <!-- Результат -->
-    <div id="step-result" class="hidden bg-gray-900 rounded-xl px-5 py-6 border border-gray-800 text-center space-y-3">
-      <p class="text-gray-500 text-sm">Ваш результат</p>
-      <div id="score-display" class="text-6xl font-black"></div>
+    <div id="step-result" class="hidden card rounded-2xl px-5 py-8 border border-gray-800/60 text-center space-y-4">
+      <p class="text-xs text-gray-500 uppercase tracking-widest">Ваш результат</p>
+      <div id="score-display" class="text-7xl font-black"></div>
       <p id="delta-display" class="text-gray-400 text-sm"></p>
-      <p id="ai-comment" class="text-green-400 italic text-sm max-w-xs mx-auto"></p>
-      <button
-        onclick="resetGame()"
-        class="text-xs text-gray-600 hover:text-gray-400 underline mt-2"
-      >
+      <div class="bg-gray-900/60 rounded-xl px-4 py-3 mx-auto max-w-xs">
+        <p id="ai-comment" class="text-green-400 italic text-sm"></p>
+      </div>
+      <button onclick="resetGame()"
+        class="text-xs text-gray-500 hover:text-gray-300 underline underline-offset-4 transition-colors">
         Сыграть ещё раз
       </button>
     </div>
 
     <!-- Таблица лидеров -->
-    <div class="bg-gray-900 rounded-xl px-5 py-5 border border-gray-800">
+    <div class="card rounded-2xl px-5 py-5 border border-gray-800/60">
       <div class="flex items-center justify-between mb-4">
-        <h3 class="font-semibold text-base flex items-center gap-2">
-          <span>🏆</span> Турнирная таблица
+        <h3 class="font-semibold text-sm flex items-center gap-2">
+          <span class="text-lg">🏆</span> Турнирная таблица
         </h3>
-        <span id="players-count" class="text-xs text-gray-500"></span>
+        <span id="players-count" class="text-xs text-gray-500 bg-gray-900 px-2 py-1 rounded-lg"></span>
       </div>
       <div id="leaderboard">
         <p class="text-gray-600 text-sm">Загрузка...</p>
@@ -166,20 +166,34 @@
     let elapsed = 0;
     let currentCategory = 'sport';
 
+    const TRIGGER_WORDS = {
+      sport:  ['гооол', 'гол', 'goal'],
+      esport: ['kill', 'фраг', 'убийство', 'победа', 'win', 'ace', 'скорпион', 'fatality'],
+    };
+
     // ── Переключение категории ────────────────────────────────────────────────
     function switchCategory(category) {
       if (currentCategory === category) return;
       currentCategory = category;
 
+      const isSport = category === 'sport';
       document.getElementById('tab-sport').className =
-        'flex-1 py-2 rounded-lg text-sm font-semibold transition-all ' +
-        (category === 'sport' ? 'bg-green-600 text-white' : 'text-gray-400 hover:text-white');
+        'flex-1 py-2.5 rounded-lg text-sm font-semibold transition-all ' +
+        (isSport ? 'bg-green-600 text-white glow-green' : 'text-gray-400 hover:text-white hover:bg-gray-800');
       document.getElementById('tab-esport').className =
-        'flex-1 py-2 rounded-lg text-sm font-semibold transition-all ' +
-        (category === 'esport' ? 'bg-purple-600 text-white' : 'text-gray-400 hover:text-white');
+        'flex-1 py-2.5 rounded-lg text-sm font-semibold transition-all ' +
+        (!isSport ? 'bg-purple-600 text-white glow-purple' : 'text-gray-400 hover:text-white hover:bg-gray-800');
 
       loadEvent();
       loadLeaderboard();
+    }
+
+    // ── Подсказки по триггер-словам ──────────────────────────────────────────
+    function renderTriggerHints() {
+      const words = TRIGGER_WORDS[currentCategory];
+      document.getElementById('trigger-hints').innerHTML = words.map(w =>
+        `<span class="bg-gray-800 text-gray-300 text-xs px-2.5 py-1 rounded-lg font-mono">${w}</span>`
+      ).join('');
     }
 
     // ── Загрузка события ─────────────────────────────────────────────────────
@@ -214,12 +228,13 @@
         document.querySelectorAll('[id^="tab-"]').forEach(el => el.disabled = true);
         document.getElementById('step-watch').classList.remove('hidden');
         document.getElementById('video-frame').src = eventData.video_embed_url;
+        renderTriggerHints();
       } catch {
         alert('Ошибка соединения');
       }
     }
 
-    // ── Старт таймера (после запуска видео) ──────────────────────────────────
+    // ── Старт таймера ────────────────────────────────────────────────────────
     function startTimer() {
       document.getElementById('step-start-timer').classList.add('hidden');
       document.getElementById('step-betting').classList.remove('hidden');
@@ -231,7 +246,6 @@
       timerInterval = setInterval(() => {
         elapsed += 0.1;
         timerEl.textContent = elapsed.toFixed(1) + ' с';
-
         const remaining = eventData.event_time_seconds - elapsed;
         if (remaining <= 15 && remaining > 0) {
           btn.classList.add('animate-pulse');
@@ -263,7 +277,6 @@
           startTimer();
           return;
         }
-
         showResult(data);
         loadLeaderboard();
       } catch {
@@ -287,8 +300,7 @@
         recorder.ondataavailable = e => chunks.push(e.data);
         recorder.onstop = async () => {
           stream.getTracks().forEach(t => t.stop());
-          const blob = new Blob(chunks, { type: recorder.mimeType });
-          await sendVoice(blob, recorder.mimeType);
+          await sendVoice(new Blob(chunks, { type: recorder.mimeType }));
         };
 
         recorder.start();
@@ -312,11 +324,10 @@
       }
     }
 
-    async function sendVoice(blob, mimeType) {
+    async function sendVoice(blob) {
       clearInterval(timerInterval);
       const voiceBtn = document.getElementById('voice-btn');
       const statusEl = document.getElementById('voice-status');
-
       const form = new FormData();
       form.append('session_token', sessionToken);
       form.append('audio', blob, 'recording.webm');
@@ -326,22 +337,21 @@
         const data = await res.json();
 
         if (!res.ok) {
-          statusEl.textContent = data.detail || 'Ошибка';
+          statusEl.textContent = '❌ ' + (data.detail || 'Ошибка');
           voiceBtn.disabled = false;
           startTimer();
           return;
         }
-
         showResult(data);
         loadLeaderboard();
       } catch {
-        statusEl.textContent = 'Ошибка соединения';
+        statusEl.textContent = '❌ Ошибка соединения';
         voiceBtn.disabled = false;
         startTimer();
       }
     }
 
-    // ── Сброс игры без перезагрузки страницы ─────────────────────────────────
+    // ── Сброс игры ────────────────────────────────────────────────────────────
     function resetGame() {
       clearInterval(timerInterval);
       sessionToken = null;
@@ -371,7 +381,7 @@
       const scoreEl = document.getElementById('score-display');
       scoreEl.textContent = `${score} / 100`;
       scoreEl.className = [
-        'text-6xl font-black',
+        'text-7xl font-black',
         score >= 70 ? 'text-green-400' : score >= 40 ? 'text-yellow-400' : 'text-red-400',
       ].join(' ');
 
@@ -387,7 +397,7 @@
         const rows = await res.json();
 
         document.getElementById('players-count').textContent =
-          rows.length ? `Уже сыграли: ${rows.length} чел.` : '';
+          rows.length ? `${rows.length} игроков` : '';
 
         if (!rows.length) {
           el.innerHTML = '<p class="text-gray-600 text-sm">Пока нет результатов. Будьте первым!</p>';
@@ -396,12 +406,12 @@
 
         const medals = ['🥇', '🥈', '🥉'];
         el.innerHTML = rows.map((row, i) => `
-          <div class="flex items-center justify-between py-2.5 border-b border-gray-800 last:border-0">
+          <div class="flex items-center justify-between py-2.5 border-b border-gray-800/60 last:border-0">
             <div class="flex items-center gap-3">
-              <span class="w-6 text-center text-sm">${medals[i] ?? `${i + 1}`}</span>
-              <span class="${i === 0 ? 'text-yellow-400 font-semibold' : 'text-gray-200'}">${row.nickname}</span>
+              <span class="w-6 text-center text-sm">${medals[i] ?? `<span class="text-gray-600">${i + 1}</span>`}</span>
+              <span class="text-sm ${i === 0 ? 'text-yellow-400 font-semibold' : 'text-gray-300'}">${row.nickname}</span>
             </div>
-            <span class="text-green-400 font-mono text-sm">${row.total_score} очк.</span>
+            <span class="text-green-400 font-mono text-sm font-semibold">${row.total_score} <span class="text-gray-600 font-normal text-xs">очк.</span></span>
           </div>
         `).join('');
       } catch {

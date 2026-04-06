@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SportPredict — угадай момент</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-950 text-white min-h-screen">
+
+  <!-- Шапка -->
+  <header class="bg-gray-900 border-b border-gray-800 px-6 py-4 flex items-center gap-3">
+    <span class="text-2xl">⚡</span>
+    <div>
+      <h1 class="text-xl font-bold text-green-400 leading-none">SportPredict</h1>
+      <p class="text-gray-500 text-xs mt-0.5">Угадай момент события точнее всех</p>
+    </div>
+  </header>
+
+  <main class="max-w-3xl mx-auto px-4 py-6 space-y-5">
+
+    <!-- Вкладки категорий -->
+    <div class="flex gap-2 bg-gray-900 rounded-xl p-1 border border-gray-800">
+      <button
+        id="tab-sport"
+        onclick="switchCategory('sport')"
+        class="flex-1 py-2 rounded-lg text-sm font-semibold transition-all bg-green-600 text-white"
+      >
+        ⚽ Спорт
+      </button>
+      <button
+        id="tab-esport"
+        onclick="switchCategory('esport')"
+        class="flex-1 py-2 rounded-lg text-sm font-semibold transition-all text-gray-400 hover:text-white"
+      >
+        🎮 Киберспорт
+      </button>
+    </div>
+
+    <!-- Название события -->
+    <div class="bg-gray-900 rounded-xl px-5 py-4 border border-gray-800">
+      <p class="text-xs text-gray-500 uppercase tracking-widest mb-1">Текущее событие</p>
+      <h2 id="event-name" class="text-lg font-semibold">Загрузка...</h2>
+      <p class="text-gray-400 text-sm mt-1">
+        Введите никнейм, нажмите <span class="text-green-400 font-bold">«Начать просмотр»</span>,
+        затем кликните <span class="text-green-400 font-bold">СЕЙЧАС!</span> или крикните в микрофон.
+      </p>
+    </div>
+
+    <!-- Шаг 1: никнейм -->
+    <div id="step-nickname" class="bg-gray-900 rounded-xl px-5 py-5 border border-gray-800">
+      <label class="block text-sm text-gray-400 mb-2">Ваш никнейм</label>
+      <div class="flex gap-3">
+        <input
+          id="nickname"
+          type="text"
+          placeholder="Введите никнейм"
+          maxlength="30"
+          class="flex-1 bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-white
+                 placeholder-gray-600 focus:outline-none focus:border-green-500 transition-colors"
+        />
+        <button
+          onclick="startSession()"
+          class="bg-green-600 hover:bg-green-500 active:scale-95 text-white font-semibold
+                 px-5 py-2 rounded-lg transition-all whitespace-nowrap"
+        >
+          Начать просмотр
+        </button>
+      </div>
+    </div>
+
+    <!-- Шаг 2: видео + ставка -->
+    <div id="step-watch" class="hidden space-y-5">
+
+      <div class="bg-gray-900 rounded-xl overflow-hidden border border-gray-800">
+        <div class="relative" style="padding-top: 56.25%">
+          <iframe
+            id="video-frame"
+            src=""
+            class="absolute inset-0 w-full h-full"
+            allowfullscreen
+            allow="autoplay"
+          ></iframe>
+        </div>
+      </div>
+
+      <div class="bg-gray-900 rounded-xl px-5 py-5 border border-gray-800 text-center space-y-4">
+        <div>
+          <p class="text-gray-500 text-xs uppercase tracking-widest mb-1">Прошло времени</p>
+          <div id="timer" class="text-4xl font-mono font-bold text-white">0.0 с</div>
+        </div>
+
+        <div class="flex gap-3 justify-center">
+          <button
+            id="predict-btn"
+            onclick="makePrediction()"
+            class="bg-green-500 hover:bg-green-400 active:scale-95 text-white font-black
+                   text-xl px-10 py-4 rounded-xl transition-all shadow-lg shadow-green-900/40
+                   disabled:bg-gray-700 disabled:cursor-not-allowed"
+          >
+            СЕЙЧАС!
+          </button>
+          <button
+            id="voice-btn"
+            onclick="startVoice()"
+            class="bg-purple-600 hover:bg-purple-500 active:scale-95 text-white font-bold
+                   text-sm px-5 py-4 rounded-xl transition-all
+                   disabled:bg-gray-700 disabled:cursor-not-allowed"
+          >
+            🎙 Крикни!
+          </button>
+        </div>
+
+        <p id="voice-status" class="text-gray-600 text-xs hidden"></p>
+        <p class="text-gray-600 text-xs">Нажмите кнопку или крикните в микрофон</p>
+      </div>
+
+    </div>
+
+    <!-- Результат -->
+    <div id="step-result" class="hidden bg-gray-900 rounded-xl px-5 py-6 border border-gray-800 text-center space-y-3">
+      <p class="text-gray-500 text-sm">Ваш результат</p>
+      <div id="score-display" class="text-6xl font-black"></div>
+      <p id="delta-display" class="text-gray-400 text-sm"></p>
+      <p id="ai-comment" class="text-green-400 italic text-sm max-w-xs mx-auto"></p>
+      <button
+        onclick="location.reload()"
+        class="text-xs text-gray-600 hover:text-gray-400 underline mt-2"
+      >
+        Сыграть ещё раз
+      </button>
+    </div>
+
+    <!-- Таблица лидеров -->
+    <div class="bg-gray-900 rounded-xl px-5 py-5 border border-gray-800">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="font-semibold text-base flex items-center gap-2">
+          <span>🏆</span> Турнирная таблица
+        </h3>
+        <span id="players-count" class="text-xs text-gray-500"></span>
+      </div>
+      <div id="leaderboard">
+        <p class="text-gray-600 text-sm">Загрузка...</p>
+      </div>
+    </div>
+
+  </main>
+
+  <script>
+    let eventData = null;
+    let sessionToken = null;
+    let timerInterval = null;
+    let elapsed = 0;
+    let currentCategory = 'sport';
+
+    // ── Переключение категории ────────────────────────────────────────────────
+    function switchCategory(category) {
+      if (currentCategory === category) return;
+      currentCategory = category;
+
+      document.getElementById('tab-sport').className =
+        'flex-1 py-2 rounded-lg text-sm font-semibold transition-all ' +
+        (category === 'sport' ? 'bg-green-600 text-white' : 'text-gray-400 hover:text-white');
+      document.getElementById('tab-esport').className =
+        'flex-1 py-2 rounded-lg text-sm font-semibold transition-all ' +
+        (category === 'esport' ? 'bg-purple-600 text-white' : 'text-gray-400 hover:text-white');
+
+      loadEvent();
+      loadLeaderboard();
+    }
+
+    // ── Загрузка события ─────────────────────────────────────────────────────
+    async function loadEvent() {
+      try {
+        const res = await fetch(`/api/event?category=${currentCategory}`);
+        if (!res.ok) throw new Error();
+        eventData = await res.json();
+        document.getElementById('event-name').textContent = eventData.name;
+      } catch {
+        document.getElementById('event-name').textContent = 'Ошибка загрузки события';
+      }
+    }
+
+    // ── Старт сессии ─────────────────────────────────────────────────────────
+    async function startSession() {
+      const nickname = document.getElementById('nickname').value.trim();
+      if (!nickname) { alert('Введите никнейм'); return; }
+      if (!eventData) { alert('Событие ещё не загружено'); return; }
+
+      try {
+        const res = await fetch('/api/start', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ event_id: eventData.id, nickname }),
+        });
+        const data = await res.json();
+        if (!res.ok) { alert(data.detail || 'Ошибка'); return; }
+
+        sessionToken = data.session_token;
+        document.getElementById('step-nickname').classList.add('hidden');
+        document.querySelectorAll('[id^="tab-"]').forEach(el => el.disabled = true);
+        document.getElementById('step-watch').classList.remove('hidden');
+        document.getElementById('video-frame').src = eventData.video_embed_url;
+        startTimer();
+      } catch {
+        alert('Ошибка соединения');
+      }
+    }
+
+    // ── Таймер ───────────────────────────────────────────────────────────────
+    function startTimer() {
+      elapsed = 0;
+      const timerEl = document.getElementById('timer');
+      const btn = document.getElementById('predict-btn');
+
+      timerInterval = setInterval(() => {
+        elapsed += 0.1;
+        timerEl.textContent = elapsed.toFixed(1) + ' с';
+
+        const remaining = eventData.event_time_seconds - elapsed;
+        if (remaining <= 15 && remaining > 0) {
+          btn.classList.add('animate-pulse');
+        } else {
+          btn.classList.remove('animate-pulse');
+        }
+      }, 100);
+    }
+
+    // ── Ставка кнопкой ───────────────────────────────────────────────────────
+    async function makePrediction() {
+      clearInterval(timerInterval);
+      const btn = document.getElementById('predict-btn');
+      btn.disabled = true;
+      btn.textContent = '...';
+
+      try {
+        const res = await fetch('/api/predict', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ session_token: sessionToken }),
+        });
+        const data = await res.json();
+
+        if (!res.ok) {
+          alert(data.detail || 'Ошибка');
+          btn.disabled = false;
+          btn.textContent = 'СЕЙЧАС!';
+          startTimer();
+          return;
+        }
+
+        showResult(data);
+        loadLeaderboard();
+      } catch {
+        alert('Ошибка соединения');
+        btn.disabled = false;
+        btn.textContent = 'СЕЙЧАС!';
+        startTimer();
+      }
+    }
+
+    // ── Голосовая ставка ─────────────────────────────────────────────────────
+    async function startVoice() {
+      const voiceBtn = document.getElementById('voice-btn');
+      const statusEl = document.getElementById('voice-status');
+
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        const recorder = new MediaRecorder(stream);
+        const chunks = [];
+
+        recorder.ondataavailable = e => chunks.push(e.data);
+        recorder.onstop = async () => {
+          stream.getTracks().forEach(t => t.stop());
+          const blob = new Blob(chunks, { type: recorder.mimeType });
+          await sendVoice(blob, recorder.mimeType);
+        };
+
+        recorder.start();
+        voiceBtn.disabled = true;
+        statusEl.classList.remove('hidden');
+
+        let countdown = 3;
+        statusEl.textContent = `🎙 Говорите... ${countdown}`;
+        const tick = setInterval(() => {
+          countdown--;
+          if (countdown > 0) {
+            statusEl.textContent = `🎙 Говорите... ${countdown}`;
+          } else {
+            clearInterval(tick);
+            statusEl.textContent = '⏳ Обработка...';
+            recorder.stop();
+          }
+        }, 1000);
+      } catch {
+        alert('Нет доступа к микрофону');
+      }
+    }
+
+    async function sendVoice(blob, mimeType) {
+      clearInterval(timerInterval);
+      const voiceBtn = document.getElementById('voice-btn');
+      const statusEl = document.getElementById('voice-status');
+
+      const form = new FormData();
+      form.append('session_token', sessionToken);
+      form.append('audio', blob, 'recording.webm');
+
+      try {
+        const res = await fetch('/api/voice-predict', { method: 'POST', body: form });
+        const data = await res.json();
+
+        if (!res.ok) {
+          statusEl.textContent = data.detail || 'Ошибка';
+          voiceBtn.disabled = false;
+          startTimer();
+          return;
+        }
+
+        showResult(data);
+        loadLeaderboard();
+      } catch {
+        statusEl.textContent = 'Ошибка соединения';
+        voiceBtn.disabled = false;
+        startTimer();
+      }
+    }
+
+    // ── Результат ─────────────────────────────────────────────────────────────
+    function showResult({ score, delta, comment }) {
+      document.getElementById('step-watch').classList.add('hidden');
+      document.getElementById('step-result').classList.remove('hidden');
+
+      const scoreEl = document.getElementById('score-display');
+      scoreEl.textContent = `${score} / 100`;
+      scoreEl.className = [
+        'text-6xl font-black',
+        score >= 70 ? 'text-green-400' : score >= 40 ? 'text-yellow-400' : 'text-red-400',
+      ].join(' ');
+
+      document.getElementById('delta-display').textContent = `Погрешность: ${delta} сек.`;
+      document.getElementById('ai-comment').textContent = `"${comment}"`;
+    }
+
+    // ── Таблица лидеров ───────────────────────────────────────────────────────
+    async function loadLeaderboard() {
+      const el = document.getElementById('leaderboard');
+      try {
+        const res = await fetch(`/api/leaderboard?category=${currentCategory}`);
+        const rows = await res.json();
+
+        document.getElementById('players-count').textContent =
+          rows.length ? `Уже сыграли: ${rows.length} чел.` : '';
+
+        if (!rows.length) {
+          el.innerHTML = '<p class="text-gray-600 text-sm">Пока нет результатов. Будьте первым!</p>';
+          return;
+        }
+
+        const medals = ['🥇', '🥈', '🥉'];
+        el.innerHTML = rows.map((row, i) => `
+          <div class="flex items-center justify-between py-2.5 border-b border-gray-800 last:border-0">
+            <div class="flex items-center gap-3">
+              <span class="w-6 text-center text-sm">${medals[i] ?? `${i + 1}`}</span>
+              <span class="${i === 0 ? 'text-yellow-400 font-semibold' : 'text-gray-200'}">${row.nickname}</span>
+            </div>
+            <span class="text-green-400 font-mono text-sm">${row.total_score} очк.</span>
+          </div>
+        `).join('');
+      } catch {
+        el.innerHTML = '<p class="text-gray-600 text-sm">Не удалось загрузить таблицу</p>';
+      }
+    }
+
+    loadEvent();
+    loadLeaderboard();
+  </script>
+
+</body>
+</html>

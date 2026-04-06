@@ -14,6 +14,7 @@ from fastapi import FastAPI, File, Form, HTTPException, UploadFile
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
+from sqlalchemy import text
 
 app = FastAPI(title="SportPredict")
 
@@ -35,13 +36,13 @@ def root() -> FileResponse:
 def get_active_event(category: Literal["sport", "esport"] = "sport") -> dict:
     """Возвращает активное событие по категории."""
     with database.get_conn() as conn:
-        event = conn.execute(
-            "SELECT * FROM events WHERE is_active = 1 AND category = ? ORDER BY id DESC LIMIT 1",
-            (category,),
+        row = conn.execute(
+            text("SELECT * FROM events WHERE is_active = 1 AND category = :cat ORDER BY id DESC LIMIT 1"),
+            {"cat": category},
         ).fetchone()
-    if not event:
+    if not row:
         raise HTTPException(status_code=404, detail="Нет активных событий")
-    return dict(event)
+    return database.row_to_dict(row)
 
 
 class StartRequest(BaseModel):
@@ -54,27 +55,26 @@ def start_session(data: StartRequest) -> dict:
     """Фиксирует серверное время начала просмотра, возвращает токен сессии."""
     with database.get_conn() as conn:
         if not conn.execute(
-            "SELECT 1 FROM events WHERE id = ? AND is_active = 1", (data.event_id,)
+            text("SELECT 1 FROM events WHERE id = :id AND is_active = 1"),
+            {"id": data.event_id},
         ).fetchone():
             raise HTTPException(status_code=404, detail="Событие не найдено")
 
         if conn.execute(
-            "SELECT 1 FROM predictions WHERE event_id = ? AND nickname = ?",
-            (data.event_id, data.nickname),
+            text("SELECT 1 FROM predictions WHERE event_id = :eid AND nickname = :nick"),
+            {"eid": data.event_id, "nick": data.nickname},
         ).fetchone():
-            raise HTTPException(
-                status_code=400, detail="Вы уже сделали ставку на это событие"
-            )
+            raise HTTPException(status_code=400, detail="Вы уже сделали ставку на это событие")
 
         conn.execute(
-            "DELETE FROM sessions WHERE event_id = ? AND nickname = ?",
-            (data.event_id, data.nickname),
+            text("DELETE FROM sessions WHERE event_id = :eid AND nickname = :nick"),
+            {"eid": data.event_id, "nick": data.nickname},
         )
 
         token = str(uuid.uuid4())
         conn.execute(
-            "INSERT INTO sessions (token, event_id, nickname) VALUES (?, ?, ?)",
-            (token, data.event_id, data.nickname),
+            text("INSERT INTO sessions (token, event_id, nickname) VALUES (:token, :eid, :nick)"),
+            {"token": token, "eid": data.event_id, "nick": data.nickname},
         )
 
     return {"session_token": token}
@@ -83,45 +83,53 @@ def start_session(data: StartRequest) -> dict:
 async def _execute_prediction(session_token: str) -> dict:
     """Вычисляет очки по токену сессии и возвращает результат с AI-комментарием."""
     with database.get_conn() as conn:
-        session = conn.execute(
-            "SELECT * FROM sessions WHERE token = ?", (session_token,)
+        session_row = conn.execute(
+            text("SELECT * FROM sessions WHERE token = :token"),
+            {"token": session_token},
         ).fetchone()
-        if not session:
+        if not session_row:
             raise HTTPException(status_code=404, detail="Сессия не найдена")
 
-        event = conn.execute(
-            "SELECT * FROM events WHERE id = ? AND is_active = 1",
-            (session["event_id"],),
+        session = database.row_to_dict(session_row)
+
+        event_row = conn.execute(
+            text("SELECT * FROM events WHERE id = :id AND is_active = 1"),
+            {"id": session["event_id"]},
         ).fetchone()
-        if not event:
+        if not event_row:
             raise HTTPException(status_code=404, detail="Событие не найдено")
 
-        started_at = datetime.fromisoformat(session["started_at"]).replace(
-            tzinfo=timezone.utc
-        )
+        event = database.row_to_dict(event_row)
+
+        # PostgreSQL возвращает datetime, SQLite — строку
+        started_raw = session["started_at"]
+        if isinstance(started_raw, str):
+            started_at = datetime.fromisoformat(started_raw).replace(tzinfo=timezone.utc)
+        else:
+            started_at = started_raw if started_raw.tzinfo else started_raw.replace(tzinfo=timezone.utc)
+
         elapsed = (datetime.now(timezone.utc) - started_at).total_seconds()
 
         if elapsed >= event["event_time_seconds"]:
-            raise HTTPException(
-                status_code=400, detail="Момент события уже прошёл — слишком поздно"
-            )
+            raise HTTPException(status_code=400, detail="Момент события уже прошёл — слишком поздно")
 
         if conn.execute(
-            "SELECT 1 FROM predictions WHERE event_id = ? AND nickname = ?",
-            (session["event_id"], session["nickname"]),
+            text("SELECT 1 FROM predictions WHERE event_id = :eid AND nickname = :nick"),
+            {"eid": session["event_id"], "nick": session["nickname"]},
         ).fetchone():
-            raise HTTPException(
-                status_code=400, detail="Вы уже сделали ставку на это событие"
-            )
+            raise HTTPException(status_code=400, detail="Вы уже сделали ставку на это событие")
 
         delta = abs(elapsed - event["event_time_seconds"])
         score = max(0, round(100 - delta * 10))
 
         conn.execute(
-            "INSERT INTO predictions (event_id, nickname, elapsed_time, score) VALUES (?, ?, ?, ?)",
-            (session["event_id"], session["nickname"], elapsed, score),
+            text("INSERT INTO predictions (event_id, nickname, elapsed_time, score) VALUES (:eid, :nick, :elapsed, :score)"),
+            {"eid": session["event_id"], "nick": session["nickname"], "elapsed": elapsed, "score": score},
         )
-        conn.execute("DELETE FROM sessions WHERE token = ?", (session_token,))
+        conn.execute(
+            text("DELETE FROM sessions WHERE token = :token"),
+            {"token": session_token},
+        )
 
     comment = await ai_comment.generate(score, delta)
     return {"score": score, "delta": round(delta, 2), "comment": comment}
@@ -165,13 +173,13 @@ async def voice_predict(
 def get_leaderboard(category: Literal["sport", "esport"] = "sport") -> list[dict]:
     """Возвращает топ-20 игроков по категории."""
     with database.get_conn() as conn:
-        rows = conn.execute("""
+        rows = conn.execute(text("""
             SELECT p.nickname, SUM(p.score) AS total_score, COUNT(*) AS predictions
             FROM predictions p
             JOIN events e ON e.id = p.event_id
-            WHERE e.category = ?
+            WHERE e.category = :cat
             GROUP BY p.nickname
             ORDER BY total_score DESC
             LIMIT 20
-        """, (category,)).fetchall()
-    return [dict(row) for row in rows]
+        """), {"cat": category}).fetchall()
+    return [database.row_to_dict(row) for row in rows]

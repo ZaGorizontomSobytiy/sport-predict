@@ -118,6 +118,10 @@
             </button>
           </div>
         </div>
+        <button onclick="resetGame()"
+          class="text-xs text-gray-600 hover:text-gray-400 underline underline-offset-4 transition-colors">
+          Сдаться и начать заново
+        </button>
 
         <!-- Подсказка по словам -->
         <div class="bg-gray-900/60 rounded-xl px-4 py-3 text-left space-y-1">
@@ -240,8 +244,13 @@
 
       document.getElementById('step-start-timer').classList.add('hidden');
       document.getElementById('step-betting').classList.remove('hidden');
-
       elapsed = 0;
+      _runTimer();
+    }
+
+    // ── Только интервал таймера (без серверного вызова) ───────────────────────
+    function _runTimer() {
+      clearInterval(timerInterval);
       const timerEl = document.getElementById('timer');
       const btn = document.getElementById('predict-btn');
 
@@ -276,7 +285,7 @@
           alert(data.detail || 'Ошибка');
           btn.disabled = false;
           btn.textContent = 'СЕЙЧАС!';
-          startTimer();
+          _runTimer();
           return;
         }
         showResult(data);
@@ -285,7 +294,7 @@
         alert('Ошибка соединения');
         btn.disabled = false;
         btn.textContent = 'СЕЙЧАС!';
-        startTimer();
+        _runTimer();
       }
     }
 
@@ -341,7 +350,7 @@
         if (!res.ok) {
           statusEl.textContent = '❌ ' + (data.detail || 'Ошибка');
           voiceBtn.disabled = false;
-          startTimer();
+          _runTimer();
           return;
         }
         showResult(data);
@@ -349,7 +358,7 @@
       } catch {
         statusEl.textContent = '❌ Ошибка соединения';
         voiceBtn.disabled = false;
-        startTimer();
+        _runTimer();
       }
     }
 

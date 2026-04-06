@@ -84,7 +84,20 @@
         </div>
       </div>
 
-      <div class="bg-gray-900 rounded-xl px-5 py-5 border border-gray-800 text-center space-y-4">
+      <!-- Шаг 2а: ожидание старта таймера -->
+      <div id="step-start-timer" class="bg-gray-900 rounded-xl px-5 py-5 border border-gray-800 text-center space-y-3">
+        <p class="text-gray-400 text-sm">Запустите видео, затем нажмите кнопку</p>
+        <button
+          onclick="startTimer()"
+          class="bg-green-600 hover:bg-green-500 active:scale-95 text-white font-bold
+                 px-8 py-3 rounded-xl transition-all text-base"
+        >
+          ▶ Старт таймера
+        </button>
+      </div>
+
+      <!-- Шаг 2б: таймер и ставка -->
+      <div id="step-betting" class="hidden bg-gray-900 rounded-xl px-5 py-5 border border-gray-800 text-center space-y-4">
         <div>
           <p class="text-gray-500 text-xs uppercase tracking-widest mb-1">Прошло времени</p>
           <div id="timer" class="text-4xl font-mono font-bold text-white">0.0 с</div>
@@ -124,7 +137,7 @@
       <p id="delta-display" class="text-gray-400 text-sm"></p>
       <p id="ai-comment" class="text-green-400 italic text-sm max-w-xs mx-auto"></p>
       <button
-        onclick="location.reload()"
+        onclick="resetGame()"
         class="text-xs text-gray-600 hover:text-gray-400 underline mt-2"
       >
         Сыграть ещё раз
@@ -201,14 +214,16 @@
         document.querySelectorAll('[id^="tab-"]').forEach(el => el.disabled = true);
         document.getElementById('step-watch').classList.remove('hidden');
         document.getElementById('video-frame').src = eventData.video_embed_url;
-        startTimer();
       } catch {
         alert('Ошибка соединения');
       }
     }
 
-    // ── Таймер ───────────────────────────────────────────────────────────────
+    // ── Старт таймера (после запуска видео) ──────────────────────────────────
     function startTimer() {
+      document.getElementById('step-start-timer').classList.add('hidden');
+      document.getElementById('step-betting').classList.remove('hidden');
+
       elapsed = 0;
       const timerEl = document.getElementById('timer');
       const btn = document.getElementById('predict-btn');
@@ -324,6 +339,28 @@
         voiceBtn.disabled = false;
         startTimer();
       }
+    }
+
+    // ── Сброс игры без перезагрузки страницы ─────────────────────────────────
+    function resetGame() {
+      clearInterval(timerInterval);
+      sessionToken = null;
+      elapsed = 0;
+
+      document.getElementById('step-result').classList.add('hidden');
+      document.getElementById('step-watch').classList.add('hidden');
+      document.getElementById('step-betting').classList.add('hidden');
+      document.getElementById('step-start-timer').classList.remove('hidden');
+      document.getElementById('step-nickname').classList.remove('hidden');
+      document.getElementById('video-frame').src = '';
+      document.getElementById('nickname').value = '';
+      document.getElementById('timer').textContent = '0.0 с';
+      document.getElementById('predict-btn').disabled = false;
+      document.getElementById('predict-btn').textContent = 'СЕЙЧАС!';
+      document.getElementById('voice-btn').disabled = false;
+      document.getElementById('voice-btn').textContent = '🎙 Крикни!';
+      document.getElementById('voice-status').classList.add('hidden');
+      document.querySelectorAll('[id^="tab-"]').forEach(el => el.disabled = false);
     }
 
     // ── Результат ─────────────────────────────────────────────────────────────

@@ -208,12 +208,22 @@
       }
     }
 
-    // ── Старт сессии ─────────────────────────────────────────────────────────
-    async function startSession() {
+    // ── Старт сессии: только загружаем видео ────────────────────────────────
+    function startSession() {
       const nickname = document.getElementById('nickname').value.trim();
       if (!nickname) { alert('Введите никнейм'); return; }
       if (!eventData) { alert('Событие ещё не загружено'); return; }
 
+      document.getElementById('step-nickname').classList.add('hidden');
+      document.querySelectorAll('[id^="tab-"]').forEach(el => el.disabled = true);
+      document.getElementById('step-watch').classList.remove('hidden');
+      document.getElementById('video-frame').src = eventData.video_embed_url;
+      renderTriggerHints();
+    }
+
+    // ── Старт таймера: здесь создаём сессию на сервере ───────────────────────
+    async function startTimer() {
+      const nickname = document.getElementById('nickname').value.trim();
       try {
         const res = await fetch('/api/start', {
           method: 'POST',
@@ -222,20 +232,12 @@
         });
         const data = await res.json();
         if (!res.ok) { alert(data.detail || 'Ошибка'); return; }
-
         sessionToken = data.session_token;
-        document.getElementById('step-nickname').classList.add('hidden');
-        document.querySelectorAll('[id^="tab-"]').forEach(el => el.disabled = true);
-        document.getElementById('step-watch').classList.remove('hidden');
-        document.getElementById('video-frame').src = eventData.video_embed_url;
-        renderTriggerHints();
       } catch {
         alert('Ошибка соединения');
+        return;
       }
-    }
 
-    // ── Старт таймера ────────────────────────────────────────────────────────
-    function startTimer() {
       document.getElementById('step-start-timer').classList.add('hidden');
       document.getElementById('step-betting').classList.remove('hidden');
 
